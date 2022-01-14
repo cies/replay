@@ -56,10 +56,23 @@ class PdfHelper {
     return userAgent.value().contains("MSIE");
   }
 
+  /** Renders PDF from localhost */
   void renderPDF(PDFDocument document, OutputStream out, Http.Request request) {
+    renderPDF(document, out, request, true);
+  }
+
+  /** Renders PDF from the same domain as the request */
+  void renderPDF(PDFDocument document, OutputStream out, Http.Request request, boolean fromLocalhost) {
     try {
       Map<?, ?> properties = new HashMap<>(Play.configuration);
-      String uri = request == null ? "" : ("http://localhost:" + Server.httpPort + request.url);
+      String uri;
+      if (request == null) {
+        uri = "";
+      } else if (fromLocalhost) {
+        uri = "http://localhost:" + Server.httpPort + request.url;
+      } else {
+        uri = request.getBase() + request.url;
+      }
       renderDoc(document, uri, properties, out);
     }
     catch (Exception e) {
